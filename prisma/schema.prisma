@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Farmer {
+  id Int @id @default(autoincrement())
+
+  firstName    String @db.VarChar(32)
+  lastName     String @db.VarChar(32)
+  phoneNumber  String
+  passwordHash String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lands     Land[]
+  orders    Order[]
+
+  @@index([phoneNumber])
+}
+
+model Land {
+  id        Int      @id @default(autoincrement())
+  landSize  Float    // in acres
+  farmerId  Int
+  farmer    Farmer   @relation(fields: [farmerId], references: [id])
+  upi       String   @unique @db.VarChar(32)
+  location  String?  @db.Text
+  orders    Order[]  
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([farmerId])
+  @@index([upi])
+}
+
+model Fertilizer {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique @db.VarChar(120)  
+  description  String?        @db.Text
+  pricePerKg   Float
+  seedTypes    Seed[]
+  orderDetails OrderDetails[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([name])
+}
+
+model Seed {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(120)  
+  description String?      @db.Text
+  pricePerKg  Float
+  fertilizers Fertilizer[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  orderDetails OrderDetails[]
+
+  @@index([name])
+}
+
+model Order {
+  id          Int            @id @default(autoincrement())
+  farmerId    Int
+  farmer      Farmer         @relation(fields: [farmerId], references: [id])
+  landId      Int         
+  land        Land          @relation(fields: [landId], references: [id])
+  status      OrderStatus    @default(PENDING)
+  totalAmount Float
+  orderDetails OrderDetails[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([farmerId])
+  @@index([landId])
+}
+
+model OrderDetails {
+  id           Int         @id @default(autoincrement())
+  orderId      Int
+  order        Order       @relation(fields: [orderId], references: [id])
+  fertilizerId Int?
+  fertilizer   Fertilizer? @relation(fields: [fertilizerId], references: [id])
+  seedId       Int?
+  seed         Seed?       @relation(fields: [seedId], references: [id])
+  quantity     Float
+  price        Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([fertilizerId])
+  @@index([seedId])
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
