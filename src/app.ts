@@ -4,7 +4,7 @@ import { errors } from "celebrate";
 import { swaggerSpec } from "./config/swagger";
 import cors from "cors";
 import router from "./routes";
-import "#api/admin/seed";
+import "#/api/admin/create-admin";
 
 const app = express();
 

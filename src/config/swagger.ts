@@ -1,6 +1,10 @@
 import swaggerJsdoc from "swagger-jsdoc";
 import * as farmerSchemas from "../api/farmers/farmers.schema";
 import * as landSchemas from "../api/land/land.schema";
+import * as fertilizerSchemas from "../api/fertilizers/fertilizer.schema";
+import * as seedSchemas from "../api/seeds/seed.schema";
+import * as orderSchemas from "../api/orders/order.schema";
+
 import {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
@@ -22,8 +26,11 @@ const definition: swaggerJsdoc.OAS3Definition = {
   ],
   components: {
     schemas: {
+      ...fertilizerSchemas,
+      ...seedSchemas,
       ...farmerSchemas,
       ...landSchemas,
+      ...orderSchemas,
       BadRequestError: {
         type: "object",
         properties: {

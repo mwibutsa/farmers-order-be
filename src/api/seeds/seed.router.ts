@@ -11,19 +11,37 @@ const seedRouter = Router();
  * /seeds:
  *   get:
  *     tags: [Seeds]
- *     summary: Get all seeds
+ *     summary: Get all seeds with pagination
  *     parameters:
  *       - in: query
  *         name: page
  *         schema:
  *           type: number
+ *         description: Page number for pagination
  *       - in: query
  *         name: limit
  *         schema:
  *           type: number
+ *         description: Number of seeds per page
  *     responses:
  *       200:
  *         description: List of seeds
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SeedsResponse'
+ *       400:
+ *         description: Invalid pagination parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BadRequestError'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
  */
 seedRouter.get("/", asyncErrorHandler(SeedController.getAllSeeds));
 
@@ -40,10 +58,28 @@ seedRouter.get("/", asyncErrorHandler(SeedController.getAllSeeds));
  *       content:
  *         application/json:
  *           schema:
- *             $ref: "#/components/schemas/CreateSeedInput"
+ *             $ref: "#/components/schemas/SeedInput"
  *     responses:
  *       201:
  *         description: Created seed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SeedResponse'
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BadRequestError'
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
  */
 seedRouter.post(
   "/",
@@ -66,15 +102,40 @@ seedRouter.post(
  *         required: true
  *         schema:
  *           type: number
+ *         description: Seed ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: "#/components/schemas/UpdateSeedInput"
+ *             $ref: "#/components/schemas/SeedInput"
  *     responses:
  *       200:
  *         description: Updated seed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SeedResponse'
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BadRequestError'
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       404:
+ *         description: Seed not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
  */
 seedRouter.put(
   "/:id",
@@ -97,9 +158,24 @@ seedRouter.put(
  *         required: true
  *         schema:
  *           type: number
+ *         description: Seed ID
  *     responses:
  *       200:
- *         description: Deleted seed
+ *         description: Successfully deleted seed
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       404:
+ *         description: Seed not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
  */
 seedRouter.delete(
   "/:id",
