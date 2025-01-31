@@ -20,13 +20,13 @@ export class TokenError extends AuthError {
 // Environment validation schema
 const envSchema = z.object({
   JWT_SECRET: z.string().min(32, "JWT secret must be at least 32 characters"),
-  JWT_EXPIRES_IN: z.number().min(600),
+  JWT_EXPIRES_IN: z.number(),
 });
 
 // Validate environment variables
 const env = envSchema.parse({
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
+  JWT_EXPIRES_IN: parseInt(process.env.JWT_EXPIRES_IN || "600"),
 });
 
 export interface JWTPayload {

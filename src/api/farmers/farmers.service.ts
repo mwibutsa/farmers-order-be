@@ -1,6 +1,6 @@
-import { DatabaseError } from "@/lib/errors";
-import { FarmerModel } from "@/models";
-import { hashPassword } from "@/utils/auth";
+import { DatabaseError } from "#lib/errors";
+import { FarmerModel } from "#/models/index";
+import { hashPassword } from "#utils/auth";
 import { Farmer } from "@prisma/client";
 
 type TFarmerInput = {
@@ -21,7 +21,7 @@ export default class FarmersService {
     });
   }
 
-  static async create(data: TFarmerInput) {
+  static async create(data: TFarmerInput): Promise<Partial<Farmer>> {
     try {
       const { password, ...restData } = data;
       const passwordHash = await hashPassword(password);
@@ -31,7 +31,10 @@ export default class FarmersService {
           passwordHash,
         },
       });
-      return newUser;
+      const publicUserData: Partial<Farmer> = { ...newUser };
+      delete publicUserData.passwordHash;
+
+      return publicUserData;
     } catch (error) {
       throw new DatabaseError(
         `Failed to create user account: ${(error as Error).message}`,

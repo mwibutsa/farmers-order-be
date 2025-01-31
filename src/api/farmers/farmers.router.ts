@@ -1,6 +1,7 @@
 import { Router } from "express";
 import FarmersController from "./farmers.controller";
-import { asyncErrorHandler } from "@/middleware/errorHandler";
+import { asyncErrorHandler } from "#middleware/errorHandler";
+import * as validations from "./farmers.validation";
 
 const farmersRouter = Router();
 
@@ -39,7 +40,7 @@ farmersRouter.get(
 /**
  * @swagger
  * /farmers/sign-up:
- *   put:
+ *   post:
  *     tags: [Farmers]
  *     summary: Create Farmer account
  *     requestBody:
@@ -64,6 +65,43 @@ farmersRouter.get(
  *         schema:
  *           $ref: '#/components/schemas/ServerError'
  */
-farmersRouter.post("/create-account");
+farmersRouter.post(
+  "/sign-up",
+  validations.signUpSchema,
+  asyncErrorHandler(FarmersController.createAccount),
+);
 
+/**
+ * @swagger
+ * /farmers/login:
+ *   post:
+ *     tags: [Farmers]
+ *     summary: Log into Farmer account
+ *     requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: "#/components/schemas/LoginInput"
+ *     responses:
+ *       201:
+ *         description: Returns the jwt token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TokenResponse'
+ *       400:
+ *         description: Invalid request body
+ *         schema:
+ *           $ref: '#/components/schemas/BadRequestError'
+ *       500:
+ *         description: Internal server error
+ *         schema:
+ *           $ref: '#/components/schemas/ServerError'
+ */
+farmersRouter.post(
+  "/login",
+  validations.loginSchema,
+  asyncErrorHandler(FarmersController.login),
+);
 export default farmersRouter;

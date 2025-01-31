@@ -13,14 +13,12 @@ export const FarmerInput = {
 export const FarmerResponse = {
   type: "object",
   properties: {
-    properties: {
-      id: { type: "number" },
-      firstName: { type: "string" },
-      lastName: { type: "string" },
-      poneNumber: { type: "number" },
-      createdAt: { type: "string", format: "date-string" },
-      updatedAt: { type: "string", format: "date-string" },
-    },
+    id: { type: "number" },
+    firstName: { type: "string" },
+    lastName: { type: "string" },
+    poneNumber: { type: "number" },
+    createdAt: { type: "string", format: "date-string" },
+    updatedAt: { type: "string", format: "date-string" },
   },
 };
 export const FarmersResponse = {
@@ -35,5 +33,21 @@ export const FarmersResponse = {
       createdAt: { type: "string", format: "date-string" },
       updatedAt: { type: "string", format: "date-string" },
     },
+  },
+};
+
+export const LoginInput = {
+  type: "object",
+  properties: {
+    phoneNumber: { type: "string" },
+    password: { type: "string" },
+  },
+};
+
+export const TokenResponse = {
+  type: "object",
+  properties: {
+    accessToken: { type: "string" },
+    expiresIn: { type: "number" },
   },
 };
