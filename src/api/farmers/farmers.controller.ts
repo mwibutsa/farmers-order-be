@@ -7,7 +7,7 @@ import {
   HTTP_UNAUTHORIZED,
 } from "#constants/httpStatus";
 import { comparePassword } from "#/utils/auth";
-import { generateTokens } from "../../utils/auth";
+import { generateTokens } from "#/utils/auth";
 
 export default class FarmersController {
   /**
