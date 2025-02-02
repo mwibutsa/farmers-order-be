@@ -18,7 +18,7 @@ export default class FertilizerController {
       Number(page) || 1,
       Number(limit) || 5,
     );
-    return res.status(HTTP_OK).json(fertilizers);
+    return res.status(HTTP_OK).json({ ...fertilizers, status: HTTP_OK });
   }
 
   /**
@@ -30,7 +30,7 @@ export default class FertilizerController {
       Number(page) || 1,
       Number(limit) || 5,
     );
-    return res.status(HTTP_OK).json(fertilizers);
+    return res.status(HTTP_OK).json({ ...fertilizers, status: HTTP_OK });
   }
 
   /**
@@ -45,7 +45,10 @@ export default class FertilizerController {
       Number(page) || 1,
       Number(limit) || 5,
     );
-    return res.status(HTTP_OK).json(fertilizers);
+    return res.status(HTTP_OK).json({
+      ...fertilizers,
+      status: HTTP_OK,
+    });
   }
 
   /**

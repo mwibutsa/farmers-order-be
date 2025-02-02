@@ -14,23 +14,27 @@ const farmersRouter = Router();
  *     parameters:
  *       - in: query
  *         name: page
- *         required: false
  *         schema:
  *           type: number
+ *         description: Page number (default is 1)
  *       - in: query
  *         name: limit
- *         required: false
  *         schema:
  *           type: number
+ *         description: Items per page (default is 5)
  *     responses:
  *       200:
- *         description: Farmers
+ *         description: List of farmers with pagination
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/FarmersResponse'
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 farmersRouter.get(
   "/all-farmers",
@@ -44,26 +48,36 @@ farmersRouter.get(
  *     tags: [Farmers]
  *     summary: Create Farmer account
  *     requestBody:
- *          required: true
- *          content:
- *              application/json:
- *                  schema:
- *                      $ref: "#/components/schemas/FarmerInput"
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/CreateFarmerInput"
  *     responses:
  *       201:
- *         description: Returns the new created farmer
+ *         description: Returns the newly created farmer
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/FarmerResponse'
  *       400:
- *         description: Invalid request body
- *         schema:
- *           $ref: '#/components/schemas/BadRequestError'
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       409:
+ *         description: User with this phone number already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Internal server error
- *         schema:
- *           $ref: '#/components/schemas/ServerError'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 farmersRouter.post(
   "/sign-up",
@@ -78,30 +92,41 @@ farmersRouter.post(
  *     tags: [Farmers]
  *     summary: Log into Farmer account
  *     requestBody:
- *          required: true
- *          content:
- *              application/json:
- *                  schema:
- *                      $ref: "#/components/schemas/LoginInput"
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/LoginInput"
  *     responses:
- *       201:
- *         description: Returns the jwt token
+ *       200:
+ *         description: Returns the JWT token
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/TokenResponse'
  *       400:
- *         description: Invalid request body
- *         schema:
- *           $ref: '#/components/schemas/BadRequestError'
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Internal server error
- *         schema:
- *           $ref: '#/components/schemas/ServerError'
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 farmersRouter.post(
   "/login",
   validations.loginSchema,
   asyncErrorHandler(FarmersController.login),
 );
+
 export default farmersRouter;

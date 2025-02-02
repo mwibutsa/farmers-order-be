@@ -88,3 +88,12 @@ export interface CreateFertilizerInput {
   kgPerAcre: number;
   compatibleSeedIds?: number[];
 }
+
+export interface CreateFarmerInput {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  password: string;
+}
+
+export type PublicFarmer = Omit<Farmer, "passwordHash">;

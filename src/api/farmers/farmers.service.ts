@@ -2,26 +2,70 @@ import { DatabaseError } from "#lib/errors";
 import { FarmerModel } from "#/models/index";
 import { hashPassword } from "#utils/auth";
 import { Farmer } from "@prisma/client";
+import {
+  CreateFarmerInput,
+  PaginatedResponse,
+  PublicFarmer,
+} from "#/interfaces/models";
 
-type TFarmerInput = {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  password: string;
-};
 export default class FarmersService {
-  static async getAll(): Promise<Farmer[]> {
-    const result = await FarmerModel.findMany();
-    return result;
+  /**
+   * Get all farmers with pagination
+   */
+  static async getAll(
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<PublicFarmer>> {
+    try {
+      const farmers = await FarmerModel.findMany({
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: { firstName: "asc" },
+      });
+
+      const totalItems = await FarmerModel.count();
+
+      const publicFarmers = farmers.map((farmer) => {
+        const publicData: Partial<Farmer> = { ...farmer };
+        delete publicData.passwordHash;
+        return publicData as PublicFarmer;
+      });
+
+      return {
+        data: publicFarmers,
+        pagination: {
+          currentPage: page,
+          itemsPerPage: limit,
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems,
+        },
+      };
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to fetch farmers: ${(error as Error).message}`,
+      );
+    }
   }
 
-  static async findByPhone(phoneNumber: string) {
-    return FarmerModel.findFirst({
-      where: { phoneNumber },
-    });
+  /**
+   * Find farmer by phone number
+   */
+  static async findByPhone(phoneNumber: string): Promise<Farmer | null> {
+    try {
+      return await FarmerModel.findFirst({
+        where: { phoneNumber },
+      });
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find farmer: ${(error as Error).message}`,
+      );
+    }
   }
 
-  static async create(data: TFarmerInput): Promise<Partial<Farmer>> {
+  /**
+   * Create new farmer account
+   */
+  static async create(data: CreateFarmerInput): Promise<PublicFarmer> {
     try {
       const { password, ...restData } = data;
       const passwordHash = await hashPassword(password);
@@ -31,14 +75,13 @@ export default class FarmersService {
           passwordHash,
         },
       });
+
       const publicUserData: Partial<Farmer> = { ...newUser };
       delete publicUserData.passwordHash;
-
-      return publicUserData;
+      return publicUserData as PublicFarmer;
     } catch (error) {
       throw new DatabaseError(
         `Failed to create user account: ${(error as Error).message}`,
-        true,
       );
     }
   }
