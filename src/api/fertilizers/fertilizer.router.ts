@@ -5,43 +5,6 @@ import { authenticateAdmin } from "#middleware/auth.middleware";
 import * as validations from "./fertilizer.validation";
 
 const fertilizerRouter = Router();
-
-/**
- * @swagger
- * /fertilizers:
- *   get:
- *     tags: [Fertilizers]
- *     summary: Get all fertilizers
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: number
- *         description: Page number (default is 1)
- *       - in: query
- *         name: limit
- *         schema:
- *           type: number
- *         description: Items per page (default is 5)
- *     responses:
- *       200:
- *         description: List of fertilizers
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PaginatedFertilizerResponse'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-fertilizerRouter.get(
-  "/",
-  asyncErrorHandler(FertilizerController.getAllFertilizers),
-);
-
 /**
  * @swagger
  * /fertilizers/with-seeds:
@@ -156,6 +119,42 @@ fertilizerRouter.get(
 fertilizerRouter.get(
   "/:id",
   asyncErrorHandler(FertilizerController.getFertilizer),
+);
+
+/**
+ * @swagger
+ * /fertilizers:
+ *   get:
+ *     tags: [Fertilizers]
+ *     summary: Get all fertilizers
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *         description: Page number (default is 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *         description: Items per page (default is 5)
+ *     responses:
+ *       200:
+ *         description: List of fertilizers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedFertilizerResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+fertilizerRouter.get(
+  "/",
+  asyncErrorHandler(FertilizerController.getAllFertilizers),
 );
 
 /**

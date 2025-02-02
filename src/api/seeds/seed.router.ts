@@ -8,6 +8,144 @@ const seedRouter = Router();
 
 /**
  * @swagger
+ * /seeds/fertilizer/{fertilizerId}:
+ *   get:
+ *     tags: [Seeds]
+ *     summary: Get compatible seeds for fertilizer
+ *     description: Get all seeds that are compatible with a specific fertilizer
+ *     parameters:
+ *       - in: path
+ *         name: fertilizerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Fertilizer ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
+ *         description: Number of seeds per page
+ *     responses:
+ *       200:
+ *         description: List of compatible seeds
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SeedsWithFertilizersResponse'
+ *       400:
+ *         description: Invalid fertilizer ID or pagination parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+seedRouter.get(
+  "/fertilizer/:fertilizerId",
+  asyncErrorHandler(SeedController.getSeedsByFertilizer),
+);
+
+/**
+ * @swagger
+ * /seeds/with-fertilizers:
+ *   get:
+ *     tags: [Seeds]
+ *     summary: Get all seeds with fertilizer information
+ *     description: Get a paginated list of all seeds with their compatible fertilizers
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
+ *         description: Number of seeds per page
+ *     responses:
+ *       200:
+ *         description: List of seeds with fertilizer information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SeedsWithFertilizersResponse'
+ *       400:
+ *         description: Invalid pagination parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+seedRouter.get(
+  "/with-fertilizers",
+  asyncErrorHandler(SeedController.getAllSeedsWithFertilizers),
+);
+
+/**
+ * @swagger
+ * /seeds/{id}:
+ *   get:
+ *     tags: [Seeds]
+ *     summary: Get seed by ID
+ *     description: Retrieve detailed information about a specific seed including compatible fertilizers
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Seed ID
+ *     responses:
+ *       200:
+ *         description: Detailed seed information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SeedWithFertilizersResponse'
+ *       404:
+ *         description: Seed not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+seedRouter.get("/:id", asyncErrorHandler(SeedController.getSeedById));
+
+/**
+ * @swagger
  * /seeds:
  *   get:
  *     tags: [Seeds]
@@ -50,43 +188,6 @@ const seedRouter = Router();
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 seedRouter.get("/", asyncErrorHandler(SeedController.getAllSeeds));
-
-/**
- * @swagger
- * /seeds/{id}:
- *   get:
- *     tags: [Seeds]
- *     summary: Get seed by ID
- *     description: Retrieve detailed information about a specific seed including compatible fertilizers
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Seed ID
- *     responses:
- *       200:
- *         description: Detailed seed information
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SeedWithFertilizersResponse'
- *       404:
- *         description: Seed not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-seedRouter.get("/:id", asyncErrorHandler(SeedController.getSeedById));
-
 /**
  * @swagger
  * /seeds:
@@ -236,108 +337,6 @@ seedRouter.delete(
   "/:id",
   authenticateAdmin,
   asyncErrorHandler(SeedController.deleteSeed),
-);
-
-/**
- * @swagger
- * /seeds/fertilizer/{fertilizerId}:
- *   get:
- *     tags: [Seeds]
- *     summary: Get compatible seeds for fertilizer
- *     description: Get all seeds that are compatible with a specific fertilizer
- *     parameters:
- *       - in: path
- *         name: fertilizerId
- *         required: true
- *         schema:
- *           type: integer
- *         description: Fertilizer ID
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Page number for pagination
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *           default: 5
- *         description: Number of seeds per page
- *     responses:
- *       200:
- *         description: List of compatible seeds
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SeedsWithFertilizersResponse'
- *       400:
- *         description: Invalid fertilizer ID or pagination parameters
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-seedRouter.get(
-  "/fertilizer/:fertilizerId",
-  asyncErrorHandler(SeedController.getSeedsByFertilizer),
-);
-
-/**
- * @swagger
- * /seeds/with-fertilizers:
- *   get:
- *     tags: [Seeds]
- *     summary: Get all seeds with fertilizer information
- *     description: Get a paginated list of all seeds with their compatible fertilizers
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Page number for pagination
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *           default: 5
- *         description: Number of seeds per page
- *     responses:
- *       200:
- *         description: List of seeds with fertilizer information
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SeedsWithFertilizersResponse'
- *       400:
- *         description: Invalid pagination parameters
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-seedRouter.get(
-  "/with-fertilizers",
-  asyncErrorHandler(SeedController.getAllSeedsWithFertilizers),
 );
 
 export default seedRouter;
