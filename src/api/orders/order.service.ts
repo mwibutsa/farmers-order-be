@@ -2,15 +2,21 @@ import { DatabaseError } from "#lib/errors";
 import { OrderModel, LandModel, SeedModel, FertilizerModel } from "#/models";
 import { prisma } from "#lib/prisma";
 import { OrderStatus } from "@prisma/client";
-
-export interface CreateOrderInput {
-  landId: number;
-  seedId?: number;
-  fertilizerId?: number;
-}
+import {
+  CreateOrderInput,
+  OrderWithDetails,
+  OrderWithFullDetails,
+  PaginatedResponse,
+} from "#/interfaces/models";
 
 export default class OrderService {
-  static async create(farmerId: number, data: CreateOrderInput) {
+  /**
+   * Create a new order with seeds and/or fertilizers
+   */
+  static async create(
+    farmerId: number,
+    data: CreateOrderInput,
+  ): Promise<OrderWithDetails> {
     const { landId, seedId, fertilizerId } = data;
 
     try {
@@ -98,8 +104,15 @@ export default class OrderService {
     }
   }
 
-  static async getFarmerOrders(farmerId: number, page = 1, limit = 5) {
-    return OrderModel.findMany({
+  /**
+   * Get farmer's orders with pagination
+   */
+  static async getFarmerOrders(
+    farmerId: number,
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<OrderWithDetails>> {
+    const orders = await OrderModel.findMany({
       where: { farmerId },
       take: limit,
       skip: (page - 1) * limit,
@@ -113,10 +126,30 @@ export default class OrderService {
         },
       },
     });
+
+    const totalItems = await OrderModel.count({
+      where: { farmerId },
+    });
+
+    return {
+      data: orders,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+      },
+    };
   }
 
-  static async getAllPendingOrders(page = 1, limit = 5) {
-    return OrderModel.findMany({
+  /**
+   * Get all pending orders with pagination
+   */
+  static async getAllPendingOrders(
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<OrderWithFullDetails>> {
+    const orders = await OrderModel.findMany({
       where: { status: "PENDING" },
       take: limit,
       skip: (page - 1) * limit,
@@ -132,16 +165,61 @@ export default class OrderService {
         },
       },
     });
+
+    const totalItems = await OrderModel.count({
+      where: { status: "PENDING" },
+    });
+
+    return {
+      data: orders,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+      },
+    };
   }
 
-  static async updateOrderStatus(orderId: number, status: OrderStatus) {
+  /**
+   * Update order status
+   */
+  static async updateOrderStatus(
+    orderId: number,
+    status: OrderStatus,
+  ): Promise<OrderWithDetails> {
     return OrderModel.update({
       where: { id: orderId },
       data: { status },
+      include: {
+        orderDetails: {
+          include: {
+            seed: true,
+            fertilizer: true,
+          },
+        },
+      },
     });
   }
 
-  static async getOrderById(orderId: number) {
-    return OrderModel.findUnique({ where: { id: orderId } });
+  /**
+   * Get order by ID with full details
+   */
+  static async getOrderById(
+    orderId: number,
+  ): Promise<OrderWithFullDetails | null> {
+    return OrderModel.findUnique({
+      where: { id: orderId },
+      include: {
+        farmer: true,
+        land: true,
+        orderDetails: {
+          include: {
+            seed: true,
+            fertilizer: true,
+          },
+        },
+      },
+    });
   }
 }

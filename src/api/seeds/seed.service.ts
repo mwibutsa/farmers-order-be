@@ -1,13 +1,7 @@
+import { CreateSeedInput, PaginatedResponse } from "#/interfaces/models";
 import { DatabaseError } from "#/lib/errors";
 import { SeedModel } from "#/models";
-import { Seed } from "@prisma/client";
-
-export interface CreateSeedInput {
-  name: string;
-  description?: string;
-  pricePerKg: number;
-  kgPerAcre: number;
-}
+import { Fertilizer, Seed } from "@prisma/client";
 
 export default class SeedService {
   static async getAll(page = 1, limit = 5): Promise<Seed[]> {
@@ -57,5 +51,72 @@ export default class SeedService {
         `Failed to delete seed: ${(error as Error).message}`,
       );
     }
+  }
+
+  static async getSeedsByFertilizer(
+    fertilizerId: number,
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<Seed & { fertilizers: Fertilizer[] }>> {
+    const seeds = await SeedModel.findMany({
+      where: {
+        fertilizers: {
+          some: {
+            id: fertilizerId,
+          },
+        },
+      },
+      include: {
+        fertilizers: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { name: "asc" },
+    });
+
+    const totalItems = await SeedModel.count({
+      where: {
+        fertilizers: {
+          some: {
+            id: fertilizerId,
+          },
+        },
+      },
+    });
+
+    return {
+      data: seeds,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+      },
+    };
+  }
+  static async getAllSeedsWithFertilizers(
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<Seed & { fertilizers: Fertilizer[] }>> {
+    const seeds = await SeedModel.findMany({
+      include: {
+        fertilizers: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { name: "asc" },
+    });
+
+    const totalItems = await SeedModel.count();
+
+    return {
+      data: seeds,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+      },
+    };
   }
 }

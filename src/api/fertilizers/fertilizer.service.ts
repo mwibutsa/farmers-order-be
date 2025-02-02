@@ -1,6 +1,8 @@
 import { DatabaseError } from "#lib/errors";
 import { FertilizerModel } from "#/models";
 import { prisma } from "#lib/prisma";
+import { PaginatedResponse } from "#/interfaces/models";
+import { Fertilizer, Seed } from "@prisma/client";
 
 export interface CreateFertilizerInput {
   name: string;
@@ -11,14 +13,66 @@ export interface CreateFertilizerInput {
 }
 export default class FertilizerService {
   static async getAll(page = 1, limit = 5) {
-    return FertilizerModel.findMany({
+    const fertilizers = await FertilizerModel.findMany({
       take: limit,
       skip: (page - 1) * limit,
       orderBy: { name: "asc" },
       include: { seedTypes: true },
     });
+
+    const totalItems = await FertilizerModel.count();
+    return {
+      data: fertilizers,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+      },
+    };
   }
 
+  static async getFertilizersBySeed(
+    seedId: number,
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<Fertilizer & { seedTypes: Seed[] }>> {
+    const fertilizers = await FertilizerModel.findMany({
+      where: {
+        seedTypes: {
+          some: {
+            id: seedId,
+          },
+        },
+      },
+      include: {
+        seedTypes: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { name: "asc" },
+    });
+
+    const totalItems = await FertilizerModel.count({
+      where: {
+        seedTypes: {
+          some: {
+            id: seedId,
+          },
+        },
+      },
+    });
+
+    return {
+      data: fertilizers,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+      },
+    };
+  }
   static async create(data: CreateFertilizerInput) {
     const { compatibleSeedIds, ...fertilizerData } = data;
 
@@ -86,5 +140,31 @@ export default class FertilizerService {
       where: { name },
       include: { seedTypes: true },
     });
+  }
+
+  static async getAllFertilizersWithSeeds(
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<Fertilizer & { seedTypes: Seed[] }>> {
+    const fertilizers = await FertilizerModel.findMany({
+      include: {
+        seedTypes: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { name: "asc" },
+    });
+
+    const totalItems = await FertilizerModel.count();
+
+    return {
+      data: fertilizers,
+      pagination: {
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+      },
+    };
   }
 }

@@ -15,6 +15,7 @@ const orderRouter = Router();
  *   post:
  *     tags: [Orders]
  *     summary: Create a new order
+ *     description: Create a new order with seeds and/or fertilizers
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -35,15 +36,19 @@ const orderRouter = Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/BadRequestError'
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ServerError'
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 orderRouter.post(
   "/",
@@ -58,23 +63,44 @@ orderRouter.post(
  *   get:
  *     tags: [Orders]
  *     summary: Get authenticated farmer's orders
+ *     description: Retrieves a paginated list of orders for the authenticated farmer
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
+ *         description: Number of items per page
  *     responses:
  *       200:
  *         description: List of farmer's orders
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/OrderResponse'
+ *               $ref: '#/components/schemas/OrderListResponse'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ServerError'
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 orderRouter.get(
   "/my-orders",
@@ -88,25 +114,50 @@ orderRouter.get(
  *   get:
  *     tags: [Orders]
  *     summary: Get all pending orders (Admin only)
+ *     description: Retrieves a paginated list of all pending orders with farmer details
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 5
+ *         description: Number of items per page
  *     responses:
  *       200:
  *         description: List of pending orders
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/OrderResponse'
+ *               $ref: '#/components/schemas/PendingOrdersResponse'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
  *         description: Forbidden - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ServerError'
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 orderRouter.get(
   "/pending",
@@ -120,6 +171,7 @@ orderRouter.get(
  *   put:
  *     tags: [Orders]
  *     summary: Update order status (Admin only)
+ *     description: Update the status of an order to either APPROVED or REJECTED
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -127,7 +179,7 @@ orderRouter.get(
  *         name: id
  *         required: true
  *         schema:
- *           type: number
+ *           type: integer
  *         description: Order ID
  *     requestBody:
  *       required: true
@@ -147,23 +199,31 @@ orderRouter.get(
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/BadRequestError'
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       403:
  *         description: Forbidden - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Order not found
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/NotFoundError'
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
  *         description: Server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ServerError'
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 orderRouter.put(
   "/:id/status",

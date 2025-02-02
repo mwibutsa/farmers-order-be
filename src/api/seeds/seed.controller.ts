@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { AuthRequest } from "#/interfaces/models";
-import SeedService, { CreateSeedInput } from "./seed.service";
+import { AuthRequest, CreateSeedInput } from "#/interfaces/models";
+import SeedService from "./seed.service";
 import { HTTP_CONFLICT, HTTP_CREATED, HTTP_OK } from "#/constants/httpStatus";
 
 export default class SeedController {
