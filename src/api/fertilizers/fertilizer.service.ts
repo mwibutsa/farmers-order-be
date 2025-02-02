@@ -1,79 +1,103 @@
 import { DatabaseError } from "#lib/errors";
-import { FertilizerModel } from "#/models";
 import { prisma } from "#lib/prisma";
-import { PaginatedResponse } from "#/interfaces/models";
-import { Fertilizer, Seed } from "@prisma/client";
+import {
+  CreateFertilizerInput,
+  FertilizerWithSeeds,
+  PaginatedResponse,
+} from "#/interfaces/models";
+import { Fertilizer } from "@prisma/client";
 
-export interface CreateFertilizerInput {
-  name: string;
-  description?: string;
-  pricePerKg: number;
-  kgPerAcre: number;
-  compatibleSeedIds?: number[];
-}
 export default class FertilizerService {
-  static async getAll(page = 1, limit = 5) {
-    const fertilizers = await FertilizerModel.findMany({
-      take: limit,
-      skip: (page - 1) * limit,
-      orderBy: { name: "asc" },
-      include: { seedTypes: true },
-    });
+  /**
+   * Get all fertilizers
+   */
+  static async getAll(
+    page = 1,
+    limit = 5,
+  ): Promise<PaginatedResponse<FertilizerWithSeeds>> {
+    try {
+      const fertilizers = await prisma.fertilizer.findMany({
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: { name: "asc" },
+        include: { seedTypes: true },
+      });
 
-    const totalItems = await FertilizerModel.count();
-    return {
-      data: fertilizers,
-      pagination: {
-        currentPage: page,
-        itemsPerPage: limit,
-        totalPages: Math.ceil(totalItems / limit),
-        totalItems,
-      },
-    };
+      const totalItems = await prisma.fertilizer.count();
+
+      return {
+        data: fertilizers,
+        pagination: {
+          currentPage: page,
+          itemsPerPage: limit,
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems,
+        },
+      };
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to fetch fertilizers: ${(error as Error).message}`,
+      );
+    }
   }
 
+  /**
+   * Get fertilizers compatible with a specific seed
+   */
   static async getFertilizersBySeed(
     seedId: number,
     page = 1,
     limit = 5,
-  ): Promise<PaginatedResponse<Fertilizer & { seedTypes: Seed[] }>> {
-    const fertilizers = await FertilizerModel.findMany({
-      where: {
-        seedTypes: {
-          some: {
-            id: seedId,
+  ): Promise<PaginatedResponse<FertilizerWithSeeds>> {
+    try {
+      const fertilizers = await prisma.fertilizer.findMany({
+        where: {
+          seedTypes: {
+            some: {
+              id: seedId,
+            },
           },
         },
-      },
-      include: {
-        seedTypes: true,
-      },
-      take: limit,
-      skip: (page - 1) * limit,
-      orderBy: { name: "asc" },
-    });
+        include: {
+          seedTypes: true,
+        },
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: { name: "asc" },
+      });
 
-    const totalItems = await FertilizerModel.count({
-      where: {
-        seedTypes: {
-          some: {
-            id: seedId,
+      const totalItems = await prisma.fertilizer.count({
+        where: {
+          seedTypes: {
+            some: {
+              id: seedId,
+            },
           },
         },
-      },
-    });
+      });
 
-    return {
-      data: fertilizers,
-      pagination: {
-        currentPage: page,
-        itemsPerPage: limit,
-        totalPages: Math.ceil(totalItems / limit),
-        totalItems,
-      },
-    };
+      return {
+        data: fertilizers,
+        pagination: {
+          currentPage: page,
+          itemsPerPage: limit,
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems,
+        },
+      };
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to fetch fertilizers by seed: ${(error as Error).message}`,
+      );
+    }
   }
-  static async create(data: CreateFertilizerInput) {
+
+  /**
+   * Create a new fertilizer
+   */
+  static async create(
+    data: CreateFertilizerInput,
+  ): Promise<FertilizerWithSeeds> {
     const { compatibleSeedIds, ...fertilizerData } = data;
 
     try {
@@ -95,7 +119,13 @@ export default class FertilizerService {
     }
   }
 
-  static async update(id: number, data: Partial<CreateFertilizerInput>) {
+  /**
+   * Update fertilizer information
+   */
+  static async update(
+    id: number,
+    data: Partial<CreateFertilizerInput>,
+  ): Promise<FertilizerWithSeeds> {
     const { compatibleSeedIds, ...updateData } = data;
 
     try {
@@ -118,9 +148,12 @@ export default class FertilizerService {
     }
   }
 
-  static async delete(id: number) {
+  /**
+   * Delete a fertilizer
+   */
+  static async delete(id: number): Promise<Fertilizer> {
     try {
-      return await FertilizerModel.delete({ where: { id } });
+      return await prisma.fertilizer.delete({ where: { id } });
     } catch (error) {
       throw new DatabaseError(
         `Failed to delete fertilizer: ${(error as Error).message}`,
@@ -128,43 +161,70 @@ export default class FertilizerService {
     }
   }
 
-  static async findById(id: number) {
-    return FertilizerModel.findUnique({
-      where: { id },
-      include: { seedTypes: true },
-    });
+  /**
+   * Find fertilizer by ID with seeds
+   */
+  static async findById(id: number): Promise<FertilizerWithSeeds | null> {
+    try {
+      return await prisma.fertilizer.findUnique({
+        where: { id },
+        include: { seedTypes: true },
+      });
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to fetch fertilizer: ${(error as Error).message}`,
+      );
+    }
   }
 
-  static async findByName(name: string) {
-    return FertilizerModel.findFirst({
-      where: { name },
-      include: { seedTypes: true },
-    });
+  /**
+   * Find fertilizer by name with seeds
+   */
+  static async findByName(name: string): Promise<FertilizerWithSeeds | null> {
+    try {
+      return await prisma.fertilizer.findFirst({
+        where: { name },
+        include: { seedTypes: true },
+      });
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to fetch fertilizer: ${(error as Error).message}`,
+      );
+    }
   }
 
+  /**
+   * Get all fertilizers with their compatible seeds
+   */
   static async getAllFertilizersWithSeeds(
     page = 1,
     limit = 5,
-  ): Promise<PaginatedResponse<Fertilizer & { seedTypes: Seed[] }>> {
-    const fertilizers = await FertilizerModel.findMany({
-      include: {
-        seedTypes: true,
-      },
-      take: limit,
-      skip: (page - 1) * limit,
-      orderBy: { name: "asc" },
-    });
+  ): Promise<PaginatedResponse<FertilizerWithSeeds>> {
+    try {
+      const fertilizers = await prisma.fertilizer.findMany({
+        include: {
+          seedTypes: true,
+        },
+        take: limit,
+        skip: (page - 1) * limit,
+        orderBy: { name: "asc" },
+      });
 
-    const totalItems = await FertilizerModel.count();
+      const totalItems = await prisma.fertilizer.count();
 
-    return {
-      data: fertilizers,
-      pagination: {
-        currentPage: page,
-        itemsPerPage: limit,
-        totalPages: Math.ceil(totalItems / limit),
-        totalItems,
-      },
-    };
+      return {
+        data: fertilizers,
+        pagination: {
+          currentPage: page,
+          itemsPerPage: limit,
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems,
+        },
+      };
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to fetch fertilizers with seeds: ${(error as Error).message}`,
+      );
+    }
   }
 }

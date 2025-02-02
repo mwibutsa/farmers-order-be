@@ -30,7 +30,7 @@ export default class OrderController {
   }
 
   /**
-   * Get farmer's orders with pagination
+   * Get farmer's orders
    */
   static async getFarmerOrders(req: AuthRequest, res: Response) {
     const page = Number(req.query.page) || 1;
@@ -52,7 +52,7 @@ export default class OrderController {
   }
 
   /**
-   * Get all pending orders with pagination
+   * Get all pending orders
    */
   static async getPendingOrders(req: AuthRequest, res: Response) {
     const page = Number(req.query.page) || 1;

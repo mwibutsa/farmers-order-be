@@ -76,3 +76,15 @@ export interface OrderServiceError {
     | "INCOMPATIBLE_PRODUCTS"
     | "DATABASE_ERROR";
 }
+
+export type FertilizerWithSeeds = Fertilizer & {
+  seedTypes: Seed[];
+};
+
+export interface CreateFertilizerInput {
+  name: string;
+  description?: string;
+  pricePerKg: number;
+  kgPerAcre: number;
+  compatibleSeedIds?: number[];
+}

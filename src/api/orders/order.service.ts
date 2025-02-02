@@ -105,7 +105,7 @@ export default class OrderService {
   }
 
   /**
-   * Get farmer's orders with pagination
+   * Get farmer's orders
    */
   static async getFarmerOrders(
     farmerId: number,
@@ -143,7 +143,7 @@ export default class OrderService {
   }
 
   /**
-   * Get all pending orders with pagination
+   * Get all pending orders
    */
   static async getAllPendingOrders(
     page = 1,
