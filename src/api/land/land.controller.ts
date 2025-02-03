@@ -5,7 +5,13 @@ import { AuthRequest } from "#/interfaces/models";
 
 export default class LandController {
   static async getFarmersLands(req: AuthRequest, res: Response) {
-    const lands = await LandService.getFarmersLands(req.user?.userId as number);
+    const { page = 1, limit = 5 } = req.query;
+
+    const lands = await LandService.getFarmersLands(
+      req.user?.userId as number,
+      +page,
+      +limit,
+    );
     return res.status(HTTP_OK).json({
       status: HTTP_OK,
       data: lands,
