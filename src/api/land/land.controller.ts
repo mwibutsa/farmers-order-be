@@ -14,7 +14,7 @@ export default class LandController {
     );
     return res.status(HTTP_OK).json({
       status: HTTP_OK,
-      data: lands,
+      ...lands,
     });
   }
 
