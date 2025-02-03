@@ -29,7 +29,7 @@ export const validateRequest = (schema: AnyZodObject) => {
           })),
         });
       }
-      next(error);
+      return next(error);
     }
   };
 };
@@ -63,7 +63,7 @@ export const authenticateToken = async (
         message: error.message,
       });
     }
-    next(error);
+    return next(error);
   }
 };
 
@@ -100,6 +100,6 @@ export const authenticateAdmin = async (
         error: error.message,
       });
     }
-    next(error);
+    return next(error);
   }
 };

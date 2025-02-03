@@ -32,6 +32,12 @@ export default class FarmersController {
   static async createAccount(req: Request, res: Response) {
     const { body } = req;
 
+    let phoneNumber = body.phoneNumber;
+    // only rwandan phones are supported for now
+    if (phoneNumber.length === 10 && !phoneNumber.startsWith("+250")) {
+      phoneNumber = `+${250}${phoneNumber}`;
+    }
+
     const userExists = await FarmersService.findByPhone(body.phoneNumber);
 
     if (userExists) {

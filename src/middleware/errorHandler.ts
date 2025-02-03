@@ -8,12 +8,12 @@ export const asyncErrorHandler = (
     req: AuthRequest,
     res: Response,
     next?: NextFunction,
-  ) => Promise<Response>,
+  ) => Promise<Response | void>,
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       await callback(req, res, next);
-      return next();
+      return;
     } catch (error) {
       if (error instanceof DatabaseError && error.isClientError) {
         return res.status(HTTP_BAD_REQUEST).json({

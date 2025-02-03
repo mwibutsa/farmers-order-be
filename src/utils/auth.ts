@@ -95,3 +95,15 @@ export function extractTokenFromHeader(authHeader?: string): string | null {
 
   return authHeader.split(" ")[1];
 }
+
+export const processPhone = (phone: string) => {
+  let phoneNumber = phone;
+  if (phone.length === 13) return phone;
+
+  // only rwandan phones are supported for now
+  if (phoneNumber.length <= 10 && !phoneNumber.startsWith("+250")) {
+    phoneNumber = `+${250}${phone}`;
+  }
+
+  return phoneNumber;
+};
