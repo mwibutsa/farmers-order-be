@@ -28,9 +28,10 @@ adminRouter.post(
     const token = generateTokens({
       userId: admin.id,
       phoneNumber: admin.email,
+      isAdmin: true,
     });
 
-    return res.json(token);
+    return res.json({ data: token });
   }),
 );
 

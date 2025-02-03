@@ -32,11 +32,13 @@ const env = envSchema.parse({
 export interface JWTPayload {
   userId: number;
   phoneNumber: string;
+  isAdmin?: boolean;
 }
 
 export interface AuthTokens {
   accessToken: string;
   expiresIn: number;
+  isAdmin?: boolean;
 }
 
 /**
@@ -68,6 +70,7 @@ export function generateTokens(payload: JWTPayload): AuthTokens {
   return {
     accessToken,
     expiresIn: env.JWT_EXPIRES_IN,
+    ...(payload.isAdmin && { isAdmin: payload.isAdmin }),
   };
 }
 
