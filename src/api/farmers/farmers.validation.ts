@@ -11,7 +11,7 @@ export const signUpSchema = celebrate({
       .required()
       .messages({
         "string.pattern.base":
-          "Phone number must be (12 digits) in format +250xxxxxxxxx",
+          "Phone number must be (12 digits) in format +250 123 456 789",
       })
       .length(13),
     password: Joi.string().min(8).max(32).required(),
@@ -25,7 +25,8 @@ export const loginSchema = celebrate({
       .pattern(phoneRegex)
       .required()
       .messages({
-        "string.pattern.base": "Phone number must be in format +250xxxxxxxxx",
+        "string.pattern.base":
+          "Phone number must be in format +250 123 456 789",
       })
       .length(13),
   }),
