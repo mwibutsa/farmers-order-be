@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import request from "supertest";
 import app from "../../../app";
 import { prismaMock } from "../../setup";
@@ -52,7 +50,7 @@ describe("Land Management Endpoints", () => {
     };
 
     it("should add new land info successfully", async () => {
-      prismaMock.land.findUnique.mockResolvedValue(null); // For LandService.findLandByUpi
+      prismaMock.land.findUnique.mockResolvedValue(null);
       prismaMock.land.create.mockResolvedValue(mockLand);
 
       const response = await request(app)
@@ -68,7 +66,7 @@ describe("Land Management Endpoints", () => {
     });
 
     it("should prevent duplicate UPI", async () => {
-      prismaMock.land.findUnique.mockResolvedValue(mockLand); // For LandService.findLandByUpi
+      prismaMock.land.findUnique.mockResolvedValue(mockLand);
 
       const response = await request(app)
         .post("/api/v1/land/add-land-info")

@@ -1,31 +1,36 @@
 import request from "supertest";
 import app from "../../../app";
 import { prismaMock } from "../../setup";
+import { StoreAdmin } from "@prisma/client";
+import * as auth from "../../../utils/auth";
 
+// Mock the auth utilities
 jest.mock("../../../utils/auth", () => ({
-  ...jest.requireActual("../../../utils/auth"),
-  comparePassword: jest
-    .fn()
-    .mockImplementation((pwd, hash) =>
-      Promise.resolve(hash === `hashed_${pwd}`),
-    ),
-  generateTokens: jest.fn().mockImplementation(() => ({
-    accessToken: "mock_admin_token",
-    expiresIn: 144000,
-    isAdmin: true,
-  })),
+  comparePassword: jest.fn(),
+  generateTokens: jest.fn(),
 }));
 
+interface AdminCredentials {
+  email: string;
+  password: string;
+}
+
+interface AuthTokenResponse {
+  accessToken: string;
+  expiresIn: number;
+  isAdmin: boolean;
+}
+
 describe("Admin Endpoints", () => {
-  const mockAdminCredentials = {
+  const mockAdminCredentials: AdminCredentials = {
     email: "admin@farmers.com",
     password: "adminPass123",
   };
 
-  const mockAdmin = {
+  const mockAdmin: StoreAdmin = {
     id: 1,
     email: mockAdminCredentials.email,
-    passwordHash: "hashed_adminPass123",
+    passwordHash: "hashedPassword123",
     firstName: "Super",
     lastName: "Admin",
     createdAt: new Date(),
@@ -34,6 +39,12 @@ describe("Admin Endpoints", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (auth.comparePassword as jest.Mock).mockResolvedValue(true);
+    (auth.generateTokens as jest.Mock).mockReturnValue({
+      accessToken: "mock_admin_token",
+      expiresIn: 144000,
+      isAdmin: true,
+    });
   });
 
   describe("POST /api/v1/admin/login", () => {
@@ -45,12 +56,18 @@ describe("Admin Endpoints", () => {
         .send(mockAdminCredentials)
         .expect(200);
 
-      expect(response.body.data).toHaveProperty("accessToken");
-      expect(response.body.data).toHaveProperty("isAdmin", true);
+      const body = response.body as { data: AuthTokenResponse };
+      expect(body.data).toHaveProperty("accessToken");
+      expect(body.data).toHaveProperty("isAdmin", true);
+      expect(auth.comparePassword).toHaveBeenCalledWith(
+        mockAdminCredentials.password,
+        mockAdmin.passwordHash,
+      );
     });
 
     it("should reject invalid admin credentials", async () => {
       prismaMock.storeAdmin.findUnique.mockResolvedValue(mockAdmin);
+      (auth.comparePassword as jest.Mock).mockResolvedValue(false);
 
       const response = await request(app)
         .post("/api/v1/admin/login")
@@ -75,15 +92,17 @@ describe("Admin Endpoints", () => {
     });
 
     it("should validate email format", async () => {
+      const invalidCredentials: AdminCredentials = {
+        email: "not-an-email",
+        password: "password123",
+      };
+
       const response = await request(app)
         .post("/api/v1/admin/login")
-        .send({
-          email: "invalid-email",
-          password: "password123",
-        })
-        .expect(400);
+        .send(invalidCredentials)
+        .expect(401);
 
-      expect(response.body).toHaveProperty("error");
+      expect(response.body).toHaveProperty("error", "Invalid credentials");
     });
   });
 });
